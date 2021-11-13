@@ -1,0 +1,12 @@
+#!/bin/bash
+echo -e "please provide filename you want to create:\c"
+read -r file
+touch /scripts/$file.sh
+echo '#!/bin/bash'> /scrips/$file.sh
+echo '#purpose:'>> /scripts/$file.sh
+echo '#version:' >> /scripts/$file.sh
+echo '#created date:' `date` >> /scripts/$file.sh
+echo '#modified date:' >> /scripts/$file.sh
+echo '#Author: SATISH GUNTUR ' >> /scripts/$file.sh
+echo '#START#' >> /scripts/$file.sh
+echo '#END#' >> /scripts/$file.sh
