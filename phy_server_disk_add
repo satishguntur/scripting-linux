@@ -1,0 +1,118 @@
+step 1: run lun_scan.sh
+step 2: run lsblk ( find which disk was added like /dev/sdbe)
+step 3:[root@gbo-linpyora1 ~]# inq.linux -sym_wwn | grep 0022A    run this command ( here device id is 0022A) 
+...........................................................................
+/dev/sdbe        000296700916   0022A     60000970000296700916533030323241
+/dev/sdbf        000296700916   0022A     60000970000296700916533030323241
+/dev/sdbg        000296700916   0022A     60000970000296700916533030323241
+/dev/sdbh        000296700916   0022A     60000970000296700916533030323241
+/dev/dm-44       000296700916   0022A     60000970000296700916533030323241
+[root@gbo-linpyora1 ~]#
+step 4: take disk corresponding LUN id with prefix 3 ( 360000970000296700916533030323241)
+
+step 5:    multipath -ll | grep mpath ( run this command to identify next free mpath)
+
+[root@gbo-linpyora1 ~]#  multipath -ll | grep mpath
+mpathe (360000970000296700916533030343938) dm-10 EMC     ,SYMMETRIX
+mpathd (360000970000296700916533030343933) dm-8 EMC     ,SYMMETRIX
+mpathc (360000970000296700916533030343845) dm-5 EMC     ,SYMMETRIX
+mpathb (360000970000296700916533030343844) dm-1 EMC     ,SYMMETRIX
+mpatha (360000970000296700916533030303439) dm-0 EMC     ,SYMMETRIX
+mpathj (360000970000296700916533030323241) dm-44 EMC     ,SYMMETRIX
+mpathi (360000970000296700916533030303636) dm-7 EMC     ,SYMMETRIX
+mpathh (360000970000296700916533030303343) dm-6 EMC     ,SYMMETRIX
+mpathg (360000970000296700916533030323442) dm-4 EMC     ,SYMMETRIX
+mpathf (360000970000296700916533030313742) dm-11 EMC     ,SYMMETRIX
+[root@gbo-linpyora1 ~]#
+
+step 6: vi /etc/multipath.conf   ( we have to add wwid entry and free mpath entry )
+
+
+blacklist_exceptions {
+                wwid "360000970000296700916533030303439"
+                wwid "360000970000296700916533030343844"
+                wwid "360000970000296700916533030343845"
+                wwid "360000970000296700916533030343933"
+                wwid "360000970000296700916533030343938"
+                wwid "360000970000296700916533030323338"
+                wwid "360000970000296700916533030323339"
+                wwid "360000970000296700916533030323341"
+                wwid "360000970000296700916533030323342"
+                wwid "360000970000296700916533030313742"
+                wwid "360000970000296700916533030323442"
+                wwid "360000970000296700916533030303343"
+                wwid "360000970000296700916533030303636"
+                wwid "360000970000296700916533030323241"
+}
+
+multipaths {
+        multipath {
+                wwid    360000970000296700916533030303439
+                alias   mpatha
+        }
+        multipath {
+                wwid    360000970000296700916533030343844
+                alias   mpathb
+        }
+        multipath {
+                wwid    360000970000296700916533030343845
+                alias   mpathc
+        }
+        multipath {
+                wwid    360000970000296700916533030343933
+                alias   mpathd
+        }
+        multipath {
+                wwid    360000970000296700916533030343938
+                alias   mpathe
+        }
+        multipath {
+                wwid    360000970000296700916533030313742
+                alias   mpathf
+        }
+        multipath {
+                wwid    360000970000296700916533030303343
+                alias   mpathh
+        }
+        multipath {
+                wwid    360000970000296700916533030323338
+                alias   oracle_asm_data_01
+        }
+        multipath {
+                wwid    360000970000296700916533030323339
+                alias   oracle_asm_data_02
+        }
+        multipath {
+                wwid    360000970000296700916533030323341
+                alias   oracle_asm_fra_01
+        }
+        multipath {
+                wwid    360000970000296700916533030323342
+                alias   oracle_asm_fra_02
+        }
+        multipath {
+                wwid    360000970000296700916533030323442
+                alias   mpathg
+        }
+
+        multipath {
+                wwid    360000970000296700916533030303636
+                alias   mpathi
+        }
+
+        multipath {
+                wwid    360000970000296700916533030323241
+                alias   mpathj
+        }
+}
+
+step 7: multipath -v2 -d  ( run this command to see disk added ) 
+
+step 8: multipath ( to save configuration )
+
+step 9: multipath -v2 -d ( run again to see if any disk appearing )  if appears any disk again run command "multipath"
+step 10:  cd /dev/mapper/  ( go to this path check for new mpath added )
+step 11: fdisk /dev/mapper/mpathj  ( run this command with corresponding mpath)
+step 12: partprobe /dev/mapper/mpathj1
+step 13: cd /dev/mapper/ ( we can see mpathj1 added)
+step14: extend the file system.
