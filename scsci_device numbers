@@ -1,0 +1,1 @@
+ls -d /sys/block/sd*/devices/scsi_device/* | awk -F '[/]' '{print $4,"- scsi",$7}'
